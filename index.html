@@ -50,11 +50,30 @@
         await scanner.start(
           { facingMode: 'environment' },
           { fps: 10, qrbox: { width: 250, height: 250 } },
-          async (text) => {
-            result.textContent = 'QRコードを読み取りました（受付処理は未実行）';
-            await scanner.stop();
-            started = false;
-          },
+         async (text) => {
+ if (!started) return;
+ started = false;
+ result.textContent = '受付画面へ移動しています...';
+ try {
+   await scanner.stop();
+ } catch (e) {}
+ const appUrl =
+   'https://script.google.com/macros/s/AKfycbyI4uxoryEzrL0T2L3brudBAfG-c6gcIprCTgfFJcoWlvd5auRiNoPCDRjpUJqO5s5NDg/exec';
+ let ticketId = '';
+ try {
+   const qrUrl = new URL(text);
+   ticketId = qrUrl.searchParams.get('ticket') || '';
+ } catch (e) {
+   ticketId = text.trim();
+ }
+ if (!/^[0-9a-f-]{36}$/i.test(ticketId)) {
+   result.textContent = '無効なQRコードです';
+   document.getElementById('start').textContent = '📷 カメラを起動';
+   return;
+ }
+ window.location.href =
+   appUrl + '?checkin=' + encodeURIComponent(ticketId);
+},
           () => {}
         );
 
