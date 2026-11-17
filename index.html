@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>チケット受付</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 500px;
+      margin: 30px auto;
+      padding: 15px;
+      text-align: center;
+    }
+    button {
+      padding: 15px;
+      font-size: 18px;
+      width: 100%;
+    }
+    #reader { margin-top: 20px; }
+    #result {
+      margin-top: 20px;
+      padding: 15px;
+      background: #eee;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+<body>
+  <h2>チケット受付｜カメラテスト</h2>
+  <p>QRコードをカメラに映してください。</p>
+
+  <button id="start" onclick="startScanner()">📷 カメラを起動</button>
+  <div id="reader"></div>
+  <div id="result">待機中</div>
+
+  <script>
+    let scanner;
+    let started = false;
+
+    async function startScanner() {
+      if (started) return;
+
+      const result = document.getElementById('result');
+
+      try {
+        scanner = new Html5Qrcode('reader');
+
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 250, height: 250 } },
+          async (text) => {
+            result.textContent = 'QRコードを読み取りました（受付処理は未実行）';
+            await scanner.stop();
+            started = false;
+          },
+          () => {}
+        );
+
+        started = true;
+        document.getElementById('start').textContent = 'カメラ起動中';
+
+      } catch (e) {
+        result.textContent = 'エラー: ' + String(e);
+      }
+    }
+  </script>
+</body>
+</html>
